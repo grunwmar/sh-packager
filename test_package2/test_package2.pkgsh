@@ -1,23 +1,11 @@
-import os
-import sys
-
-def main():
-    working_dir = os.environ['APPPACK_WD']
-    dirname = os.environ['APPPACK_DIRNAME']
-    b64_path = os.environ['APPPACK_B64PATH']
-    pkg_sh_name = os.path.join(working_dir, f'{dirname}.pkgsh')
-
-    try:
-        with open(b64_path, 'r') as f1:
-            b64_tar = f1.read()
-    except FileNotFound:
-        print(f"File '{b64_path}' not found. Exit...")
-        sys.exit(1)
-
-    with open(pkg_sh_name, 'w') as f2:
-        sh=f'''#!/bin/bash
+#!/bin/bash
 B64TARCHIVE=$(cat <<-TAR64
-{b64_tar}TAR64
+/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4Cf/AKpdADoZSs4fo3w70sRVJQdymCoLRjrc0Y5xmZPw
+HW9rEYLEbAvfv5ejEhZK/yYMlG/dlRmvb+2y0xLJIP1cLv1ZhX0L8JU+truQsQXJOcFvzvPZFt1y
+bCJnjlBe3kjSsJIEZG0vn/Fn9EvvEbXjQOLum0WRBYoZMHwxbjknd3MWCfz59gdiW09NvFgNwbyY
+PJtr3pHXEnMrsJvO7WjXueuxCPsP4q65J7IhdE9AAAAAlRbmKxF4FuoAAcYBgFAAAE+YYbixxGf7
+AgAAAAAEWVo=
+TAR64
 );
 RUNSH=$(cat <<-RUNSH
 source ./venv/bin/activate
@@ -29,12 +17,12 @@ if [[ "$1" = "--path" ]]; then
     WD="$2"
     cd "$WD"
 fi
-TMP_TARPATH="$WD"/"tmp_{dirname}".tarxz
-echo "** Unpacking '{dirname}' package...";
+TMP_TARPATH="$WD"/"tmp_test_package2".tarxz
+echo "** Unpacking 'test_package2' package...";
 echo "$B64TARCHIVE" | base64 --decode > "$TMP_TARPATH"
 tar -xJvf "$TMP_TARPATH"
 rm "$TMP_TARPATH"
-cd "{dirname}"
+cd "test_package2"
 if [ -f requirements.txt ]; then
     echo "Installing virtual environment for python3."
     python3 -m venv venv
@@ -51,9 +39,3 @@ ls
 echo ""
 echo "Press ENTER to exit..."
 read QUITKEY
-'''
-        f2.write(sh)
-
-
-if __name__ == "__main__":
-    main()

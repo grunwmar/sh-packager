@@ -1,0 +1,9 @@
+venv
+pyvenv
+env
+python
+*/__pycache__
+.git
+*.log
+*.pyc
+*/exclude.txt
