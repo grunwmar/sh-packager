@@ -6,6 +6,7 @@ def main():
     dirname = os.environ['APPPACK_DIRNAME']
     b64_path = os.environ['APPPACK_B64PATH']
     pkg_sh_name = os.path.join(working_dir, f'{dirname}.pkgsh')
+    compression_opt = os.environ['APPACK_COMPRESSION']
 
     try:
         with open(b64_path, 'r') as f1:
@@ -29,10 +30,10 @@ if [[ "$1" = "--path" ]]; then
     WD="$2"
     cd "$WD"
 fi
-TMP_TARPATH="$WD"/"tmp_{dirname}".tarxz
+TMP_TARPATH="$WD"/"tmp_{dirname}".tarpkg
 echo "** Unpacking '{dirname}' package...";
 echo "$B64TARCHIVE" | base64 --decode > "$TMP_TARPATH"
-tar -xJvf "$TMP_TARPATH"
+tar -x{compression_opt}vf "$TMP_TARPATH"
 rm "$TMP_TARPATH"
 cd "{dirname}"
 if [ -f requirements.txt ]; then
@@ -49,8 +50,10 @@ echo "-------------------------------------------"
 pwd
 ls
 echo ""
-echo "Press ENTER to exit..."
-read QUITKEY
+if ! [ -z $(which notify-send) ]; then
+    notify-send "Unpacked" "File \'$0\' unpacked."
+fi
+
 '''
         f2.write(sh)
 

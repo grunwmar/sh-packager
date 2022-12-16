@@ -1,10 +1,9 @@
 #!/bin/bash
 B64TARCHIVE=$(cat <<-TAR64
-/Td6WFoAAATm1rRGAgAhARYAAAB0L+Wj4Cf/AKpdADoZSs4fo3w70sRVJQdymCoLRjrc0Y5xmZPw
-HW9rEYLEbAvfv5ejEhZK/yYMlG/dlRmvb+2y0xLJIP1cLv1ZhX0L8JU+truQsQXJOcFvzvPZFt1y
-bCJnjlBe3kjSsJIEZG0vn/Fn9EvvEbXjQOLum0WRBYoZMHwxbjknd3MWCfz59gdiW09NvFgNwbyY
-PJtr3pHXEnMrsJvO7WjXueuxCPsP4q65J7IhdE9AAAAAlRbmKxF4FuoAAcYBgFAAAE+YYbixxGf7
-AgAAAAAEWVo=
+H4sIAAAAAAAAA+3RQQrCMBCF4aw9RXbVjSZp01zBW4SiQcRaSxsRPb1VEHRRdNEi4v9tBjKzeOHF
+0EZfF6tdsQlmIUahOs7Z29TOquf5IHSWZk5ZndpcKJ0aZYS048R5dWxj0UgpLqEM1bn/7t3+R8WX
+/r3fF9vK+3k95E9vBed51t+/sff+c6e1ct27tqY7l2rADL3+vP+62VZxmixDWR7k6dCU62Q2+XYo
+AAAAAAAAAAAAAAAAAB+5AtKblo0AKAAA
 TAR64
 );
 RUNSH=$(cat <<-RUNSH
@@ -17,10 +16,10 @@ if [[ "$1" = "--path" ]]; then
     WD="$2"
     cd "$WD"
 fi
-TMP_TARPATH="$WD"/"tmp_test_package2".tarxz
+TMP_TARPATH="$WD"/"tmp_test_package2".tarpkg
 echo "** Unpacking 'test_package2' package...";
 echo "$B64TARCHIVE" | base64 --decode > "$TMP_TARPATH"
-tar -xJvf "$TMP_TARPATH"
+tar -xzvf "$TMP_TARPATH"
 rm "$TMP_TARPATH"
 cd "test_package2"
 if [ -f requirements.txt ]; then
@@ -37,5 +36,7 @@ echo "-------------------------------------------"
 pwd
 ls
 echo ""
-echo "Press ENTER to exit..."
-read QUITKEY
+if ! [ -z $(which notify-send) ]; then
+    notify-send "Unpacked" "File '$0' unpacked."
+fi
+
