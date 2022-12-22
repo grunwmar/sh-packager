@@ -17,6 +17,7 @@ def main():
 
     with open(pkg_sh_name, 'w') as f2:
         sh=f'''#!/bin/bash
+TS=$(date '+%Y-%m-%d_%H-%M-%S')
 B64TARCHIVE=$(cat <<-TAR64
 {b64_tar}TAR64
 );
@@ -25,37 +26,84 @@ source ./venv/bin/activate
 python '__main__.py \$@'
 RUNSH
 );
+ERRORS=0
 WD="$PWD"
+
 if [[ "$1" = "--path" ]]; then
     WD="$2"
     cd "$WD"
 fi
+
 TMP_TARPATH="$WD"/"tmp_{dirname}".tarpkg
-echo "** Unpacking '{dirname}' package...";
+
+log () {{
+  DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+  echo -e "$DATETIME $1"
+  echo -e "$DATETIME $1">> "$WD/$TS""_{dirname.upper()}.log"
+}}
+
+check_status() {{
+    if ! [ "$?" = "0" ]; then
+        log "! An error occured !"
+        ERRORS=1
+    fi
+}}
+
+
+log "** Unpacking '{dirname}' package...";
 echo "$B64TARCHIVE" | base64 --decode > "$TMP_TARPATH"
 tar -x{compression_opt}vf "$TMP_TARPATH"
 rm "$TMP_TARPATH"
 cd "{dirname}"
+
 if [ -f requirements.txt ]; then
-    echo "Creating virtual environment for python3."
+    log "Creating virtual environment for python3."
     python3 -m venv venv
+
     source venv/bin/activate
-    echo "Upgrading pip"
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    if ! ([ -f "run.sh" ] || [ -f "run" ]); then
-        echo "$RUNSH" > run.sh
-        chmod +x run.sh
+
+    if ! [ -z $"$VIRTUAL_ENV" ]; then
+
+        log "Upgrading pip."
+        pip install --upgrade pip
+
+        log "Installing packages to virtual environment."
+        pip install -r requirements.txt
+
+        if ! ([ -f "run.sh" ] || [ -f "run" ]); then
+            if [ -f "__main__.py" ]; then
+                echo "$RUNSH" > run.sh
+                log "File 'run.sh' was created."
+            fi
+        fi
+
     fi
 fi
-echo "Done."
+
+if [ -f run.sh ]; then
+    chmod +x run.sh
+    log "File 'run.sh' was set executable."
+fi
+
+log "Done."
 echo "-------------------------------------------"
+echo -n "Directory: "
 pwd
+echo ""
+
 ls
 echo ""
+
 if ! [ -z $(which notify-send) ]; then
-    notify-send "Unpacked" "File \'$0\' unpacked."
+        notify-send "Unpacked" "File \'$0\' unpacked."
+    else
+        log "Command 'notify-send' is not installed."
 fi
+
+if ! [ $ERRORS = "0" ]; then
+    log "ERROR(S) OCCURED DURING INSTALLATION."
+fi
+
 echo "Press ENTER to exit..."
 read QUIT
 '''

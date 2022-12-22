@@ -46,7 +46,7 @@ B64NAME="$DIRNAME".b64
 
 TMP_TARPATH="$PWD"/"tmp_$DIRNAME".tarpkg
 TMP_B64PATH="$PWD"/"tmp_$DIRNAME".tarpkg64
-EXCLUDEFILE_PREDEF="$SHDIR"/"exclude.txt"
+EXCLUDEFILE_PREDEF="$SHDIR"/"_exclude.txt"
 EXCLUDEFILE="$WD"/"exclude.txt"
 
 if [ -d "$WD/venv" ]; then
