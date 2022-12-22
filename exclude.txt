@@ -3,4 +3,3 @@ venv
 .git
 *.log
 *.pyc
-*/exclude.txt

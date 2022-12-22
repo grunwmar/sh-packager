@@ -1,6 +1,0 @@
-2022-12-16 12:13:58 ** Packing '/home/zeleny/.sh_packager/test_package2'
-2022-12-16 12:13:58 Compressing by GZIP method...
-2022-12-16 12:13:58 Compressed.
-2022-12-16 12:13:58 Directory 'test_package2' packed as '/home/zeleny/.sh_packager/test_package2/test_package2.pkgsh' in 0 sec.
-2022-12-16 12:13:58 Done. **
-
