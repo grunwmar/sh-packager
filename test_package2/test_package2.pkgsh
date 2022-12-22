@@ -1,0 +1,95 @@
+#!/bin/bash
+TS=$(date '+%Y-%m-%d_%H-%M-%S')
+B64TARCHIVE=$(cat <<-TAR64
+H4sIAAAAAAAAA+3UzU6EMBQF4K7nKbob3SC3f7yCb9EQbZRYCpYSZ+bpBZNRMSEshJkYz7dpAiS9
+5OSe5Lpk2/LhpXxy4o5tIh8UhR5PKnT+/TxjpKQmkiYXw3OSZDTjeptxpvoulZFzdnLeheP8d0vv
+/6g0yd/auqyCtVm75p+OARuj5vNX9JW/pCF/LbRiPF9xhln/PP+qbpuYuD/UftfGKqSb/b3zvuFv
+TfSP+9vdtQeETU33P/Yh657XvmNx/z/7XxSCxv5XkrD/F/Ejf/faV9HVLqQuS4e0zh3L+etz/2tD
+Y/8bpQn5X8JH8V97CAAAAAAAAAAAAAAAAAAA+LV31sSqQwAoAAA=
+TAR64
+);
+RUNSH=$(cat <<-RUNSH
+source ./venv/bin/activate
+python '__main__.py \$@'
+RUNSH
+);
+ERRORS=0
+WD="$PWD"
+
+if [[ "$1" = "--path" ]]; then
+    WD="$2"
+    cd "$WD"
+fi
+
+TMP_TARPATH="$WD"/"tmp_test_package2".tarpkg
+
+log () {
+  DATETIME=$(date '+%Y-%m-%d %H:%M:%S')
+  echo -e "$DATETIME $1"
+  echo -e "$DATETIME $1">> "$WD/$TS""_TEST_PACKAGE2.log"
+}
+
+check_status() {
+    if ! [ "$?" = "0" ]; then
+        log "! An error occured !"
+        ERRORS=1
+    fi
+}
+
+
+log "** Unpacking 'test_package2' package...";
+echo "$B64TARCHIVE" | base64 --decode > "$TMP_TARPATH"
+tar -xzvf "$TMP_TARPATH"
+rm "$TMP_TARPATH"
+cd "test_package2"
+
+if [ -f requirements.txt ]; then
+    log "Creating virtual environment for python3."
+    python3 -m venv venv
+
+    source venv/bin/activate
+
+    if ! [ -z $"$VIRTUAL_ENV" ]; then
+
+        log "Upgrading pip."
+        pip install --upgrade pip
+
+        log "Installing packages to virtual environment."
+        pip install -r requirements.txt
+
+        if ! ([ -f "run.sh" ] || [ -f "run" ]); then
+            if [ -f "__main__.py" ]; then
+                echo "$RUNSH" > run.sh
+                log "File 'run.sh' was created."
+            fi
+        fi
+
+    fi
+fi
+
+if [ -f run.sh ]; then
+    chmod +x run.sh
+    log "File 'run.sh' was set executable."
+fi
+
+log "Done."
+echo "-------------------------------------------"
+echo -n "Directory: "
+pwd
+echo ""
+
+ls
+echo ""
+
+if ! [ -z $(which notify-send) ]; then
+        notify-send "Unpacked" "File '$0' unpacked."
+    else
+        log "Command 'notify-send' is not installed."
+fi
+
+if ! [ $ERRORS = "0" ]; then
+    log "ERROR(S) OCCURED DURING INSTALLATION."
+fi
+
+echo "Press ENTER to exit..."
+read QUIT
